@@ -1,3 +1,4 @@
+const { updateUser } = require("../services/userServices");
 const ApiError = require("../utils/ApiError");
 const { asyncHandler } = require("../utils/asyncHandler");
 const jwt = require("jsonwebtoken");
@@ -21,4 +22,18 @@ exports.generateAccessToken = asyncHandler(async (req, res) => {
     accessToken: newAccessToken,
     refreshToken: reftoken,
   });
+});
+
+// controller for verifying user with email
+exports.activeRegisterUser = asyncHandler(async (req, res) => {
+  const token = req.query.token;
+  if (!token) {
+    throw new ApiError("token not provided", 401);
+  } else {
+    const decode = jwt.verify(token, process.env.EMAIL_VERIFICATION_KEY);
+    await updateUser("login", ["active", decode["id"]]);
+    res.status(200).json({
+      msg: "Account Activated successfully",
+    });
+  }
 });

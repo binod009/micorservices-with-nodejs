@@ -3,17 +3,22 @@ const { asyncHandler } = require("../utils/asyncHandler");
 const ApiError = require("../utils/ApiError");
 const pool = require("../db");
 const jwt = require("jsonwebtoken");
-
-const user_svc = require("../services/userServices");
+const sendEmailVerification = require("../services/emailServices");
 require("dotenv").config();
+const user_svc = require("../services/userServices");
 exports.signUp = asyncHandler(async (req, res) => {
   const { username, email, password } = req.body;
-  const hashedPassword = bcrypt.hash(password, 10);
+  const hashedPassword = bcrypt.hashSync(password, 10);
   // Insert user into the database
-  const result = await pool.query(
-    "INSERT INTO login (username, email, password) VALUES ($1, $2, $3) RETURNING *",
-    [username, email, hashedPassword]
+  const result = await user_svc.signUpUser([username, email, hashedPassword]);
+  const token = jwt.sign(
+    { id: result.rows[0].id },
+    process.env.EMAIL_VERIFICATION_KEY,
+    { expiresIn: "1h" }
   );
+
+  // after successfull creating sending  user activation link to gmail;
+  await sendEmailVerification(email, token);
   res.status(201).json({
     msg: "created successfully",
     result: result.rows[0],
@@ -23,11 +28,14 @@ exports.signUp = asyncHandler(async (req, res) => {
 exports.signIn = asyncHandler(async (req, res) => {
   const { email, password } = req.body;
   const { rows } = await user_svc.getUserByEmail(email);
-  if (rows.length > 0) {
+  if (rows.length > 0 && rows[0].status === "inactive") {
+    throw new ApiError("Check you email to Activate your account", 400);
+  }
+  if (rows.length > 0 && rows[0].status === "active") {
     const comparePassword = bcrypt.compare(password, rows[0].password);
     if (comparePassword) {
       const payload = { id: rows[0].id, username: rows[0].username };
-      
+
       const accessToken = jwt.sign(payload, process.env.JWT_SECRET_KEY, {
         expiresIn: "1m",
       });
