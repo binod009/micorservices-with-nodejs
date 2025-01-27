@@ -1,5 +1,11 @@
+
 class ApiError extends Error {
-  constructor(message, statusCode) {
+  statusCode: number;
+  status: string;
+  [key: string]: any;
+  isOperational: boolean;
+
+  constructor(message:string,statusCode:number ) {
     super(message);
     this.statusCode = statusCode;
     this.status = statusCode >= 400 && statusCode < 500 ? "fail" : "error";
@@ -8,4 +14,4 @@ class ApiError extends Error {
   }
 }
 
-module.exports = ApiError;
+export default ApiError;

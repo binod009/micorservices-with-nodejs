@@ -1,21 +1,24 @@
-const Database = require("../db");
+import { QueryResult } from "pg";
+import Database from "../db";
 
 class PostServices extends Database {
   constructor() {
     super();
   }
-  createPostService = async (values) => {
+  createPostService = async (
+    values: string[]
+  ): Promise<QueryResult> => {
     const query =
       "INSERT INTO post (title, description) VALUES ($1, $2) RETURNING *";
     const result = await this.pool.query(query, values);
     return result;
   };
 
-  getAllPostDataService = async () => {
+  getAllPostDataService = async (): Promise<{}> => {
     const query = "SELECT * from post";
     const result = await this.pool.query(query);
     return result.rows;
   };
 }
 
-module.exports = new PostServices();
+export default new PostServices();

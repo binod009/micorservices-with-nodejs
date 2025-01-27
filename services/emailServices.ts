@@ -1,9 +1,10 @@
-const nodemailer = require("nodemailer");
-const nodemailerConfig = require("../utils/config");
+import nodemailer from "nodemailer";
+import nodemailerConfig from "../utils/config";
+import jwt from "jsonwebtoken";
 require("dotenv").config();
 const transporter = nodemailer.createTransport(nodemailerConfig);
-const jwt = require("jsonwebtoken");
-const sendEmailVerification = async (to, token) => {
+
+const sendEmailVerification = async (to:string, token:string):Promise<void> => {
   const activationUrl = `${process.env.EMAIL_VERIFICATION_URL}?token=${token}`;
   const emailOptions = {
     from: process.env.USER,
@@ -28,4 +29,4 @@ const sendEmailVerification = async (to, token) => {
   }
 };
 
-module.exports = sendEmailVerification;
+export default sendEmailVerification;

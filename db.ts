@@ -1,5 +1,23 @@
-const { Pool } = require("pg");
-class Database {
+
+import { Pool} from "pg";
+
+type databaseTypes = {
+  user: string,
+  host: string,
+  database: string,
+  password: string,
+  port: number,
+}
+  
+
+export default class Database{
+  private user: string;
+  private host: string;
+  private database: string;
+  private password: string;
+  private port: number;
+  public pool: Pool;
+  
   constructor() {
     (this.user = "postgres"),
       (this.host = "localhost"),
@@ -37,4 +55,4 @@ class Database {
 //   } else console.log("connect to postgresh");
 // });
 
-module.exports = Database;
+
