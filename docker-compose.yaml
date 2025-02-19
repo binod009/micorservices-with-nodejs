@@ -1,0 +1,75 @@
+services:
+  authapp:
+    container_name: authapp
+    build:
+      context: ./authapp
+    #   dockerfile: Dockerfile
+    volumes: 
+    - ./authapp:/home/node/authapp
+    image: authapp:latest
+    working_dir: /home/node/authapp
+    command: npm start
+    ports: 
+    - 3003:3003
+    networks:
+      - auth_net
+
+  orderapp:
+    container_name: orderapp
+    # build:
+    #   context: ./authapp
+    #   dockerfile: Dockerfile
+    volumes: 
+    - ./orderapp:/home/node/orderapp
+    image: orderapp:latest
+    working_dir: /home/node/orderapp
+    command: npm start
+    ports: 
+    - 3008:3008
+    networks:
+      - auth_net
+
+  productapp:
+    container_name: productapp
+      
+    volumes: 
+    - ./productapp:/home/node/productapp
+    image: node:latest
+    working_dir: /home/node/productapp
+    command: npm start
+    ports: 
+    - 3005:3005
+    networks:
+      - auth_net
+
+  gateway:
+    container_name: gateway
+    volumes:
+    - ./gateway:/home/node/gateway
+    image: node:latest
+    working_dir: /home/node/gateway
+    command: npm start
+    ports:
+    - 3007:3007
+
+    networks:
+      - auth_net
+
+
+  customerapp:
+    container_name: customerapp
+    
+    volumes:
+    - ./customerapp:/home/node/customerapp
+    image: node:latest
+    working_dir: /home/node/customerapp
+    command: npm start
+    ports:
+    - 3006:3006
+    networks:
+      - auth_net
+  
+
+networks:
+  auth_net:
+   driver: bridge
