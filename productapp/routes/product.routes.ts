@@ -3,6 +3,7 @@ import {
   createProduct,
   findProductStock,
   getFilterProduct,
+  getProductById,
   updateProductStock,
 } from "../controller/product.controller";
 const product_route = express.Router();
@@ -14,8 +15,10 @@ dotenv.config();
 
 product_route
   .post("/products", verifyUserToken, createProduct)
+  .get("/products/:id", verifyUserToken, getProductById)
   .get("/products/stock/:productid", verifyUserToken, findProductStock)
-  .get("/products", verifyUserToken, getFilterProduct).patch("/product/stock", verifyUserToken, updateProductStock)
-  .patch('/api-event',verifyUserToken,apiEventController)
+  .get("/products", verifyUserToken, getFilterProduct)
+  .patch("/product/stock", verifyUserToken, updateProductStock)
+  .patch("/api-event", verifyUserToken, apiEventController);
 
 export default product_route;

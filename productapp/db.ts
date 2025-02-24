@@ -1,33 +1,34 @@
-import { Pool } from "pg";
-import { ClientConfig } from "./utils/config";
-class Database {
-  private user: string | undefined;
-  private database: string | undefined;
-  private pass: string | undefined;
-  private port: number | undefined;
-    public pool: Pool;
-    
-  constructor() {
-    this.user = ClientConfig.user;
-    this.database = ClientConfig.dbuser;
-    this.pass = ClientConfig.pass;
-    this.port = ClientConfig.port;
-    this.pool = new Pool({
-      database: this.database,
-      port: this.port,
-      password: this.pass,
-      user: this.user,
-    });
-  }
-  async connectDB() {
-    this.pool.connect((err) => {
-      if (!err) {
-        console.log("connnected to database");
-      } else {
-        console.log("got error from database", err);
-      }
-    });
-  }
-}
+import dotenv from "dotenv";
+dotenv.config();
+import { Sequelize } from "sequelize";
 
-export default Database;
+const sequelize = new Sequelize(
+  `postgres://postgres:${process.env.DB_PASS}@localhost:5432/${process.env.DB}`
+);
+
+export const connectDB = () => {
+    sequelize
+      .authenticate()
+      .then(() => {
+        sequelize
+          .sync({alter: true})
+          .then(() => console.log("all models sync"));
+      })
+      .catch((err) => console.log("error connecting to database", err)); 
+}
+// const pool = new Pool({
+//   user: "postgres",
+//   host: "localhost",
+//   database: "usermanagement",
+//   password: "binod@555",
+//   port: 5432,
+// });
+
+// pool.connect((err) => {
+//   if (err) {
+//     console.log("cannot connect to PostgreshServer");
+//   } else console.log("connect to postgresh");
+// });
+
+
+export {sequelize};

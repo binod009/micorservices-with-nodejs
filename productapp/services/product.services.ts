@@ -1,9 +1,12 @@
-import Database from "../db";
-
 import jwt from "jsonwebtoken";
 import { HelperparseFilter } from "../helpers/parsedFilters";
+import productModel from "../models/product.model";
+import { Op } from "sequelize";
+import ApiError from "../utils/ApiError";
+import productQtyModel from "../models/productquantity.model";
+import { sequelize } from "../db";
 
-interface IData {
+type productDataTypes = {
   name: string;
   price: number;
   description: string;
@@ -11,7 +14,7 @@ interface IData {
   category: string;
   brand: string;
   slug: string;
-}
+};
 
 // since user can query based on price or category so i have used dynamce key value
 //# price:500 | electronices
@@ -24,40 +27,37 @@ type Ifilters = {
 };
 
 type updateProductTypes = {
-  status: number,
-  msg: string,
-  result?:[{}]
-}
+  status: number;
+  msg: string;
+  result?: [{}];
+};
 
-class ProductServices extends Database {
-  async createProduct(data: IData) {
-    const query =
-      "INSERT INTO products (name,price,description,category,user_id) VALUES ($1, $2,$3,$4,$5) RETURNING *";
-    const result = await this.pool.query(query, [
-      data.name,
-      data.price,
-      data.description,
-      data.category,
-      data.brand,
-      data.user_id,
-      data.slug,
-    ]);
+class ProductServices {
+  async createProduct(data: productDataTypes) {
+    const result = await productModel.create(data);
+    console.log("created data", result);
     return result;
+  }
+
+  async FindById(productId: string) {
+    const productdata = await productModel.findOne({
+      where: { id: productId },
+    });
+    if (!productdata) {
+      throw new ApiError(`Product with Id ${productId} not Found`, 404);
+    }
+    return { status: 200, msg: "success", result: productdata?.dataValues };
   }
 
   async getProduct(filters: Ifilters) {
     const filterConditions: { [key: string]: string } = {
-      category: "CATEGORY",
-      brand: "BRAND",
-      price: "'PRICE",
-      slug: "SLUG",
-      ID: "ID",
+      category: "category",
+      brand: "brand",
+      price: "price",
+      slug: "slug",
+      ID: "id",
     };
-
-    let query = `SELECT * FROM products where 1=1`;
-    let values = [];
-    let index = 1;
-
+    let condition;
     for (const [key, value] of Object.entries(filters)) {
       if (value) {
         if (
@@ -65,74 +65,87 @@ class ProductServices extends Database {
           typeof value !== "string" &&
           typeof value !== "number"
         ) {
-          query += ` AND price BETWEEN $${index++} AND $${index++}`;
-          values.push(value.min, value.max);
+          condition = {
+            price: {
+              [Op.between]: [value.min, value.max],
+            },
+          };
         } else if (key === "price" && typeof value === "number") {
-          query += ` AND price = $${index++}`;
-          values.push(value);
+          condition = {
+            price: value,
+          };
         } else if (filterConditions[key]) {
-          query += ` AND ${filterConditions[key]}=$${index++}`;
-          values.push(value);
+          condition = {
+            [filterConditions[key]]: value,
+          };
         }
       }
     }
 
-    const res = await this.pool.query(query, values);
-    return res.rows.length > 0 ? res.rows : res.rows[0];
+    const productResult = await productModel.findAll({
+      where: condition,
+      raw: true,
+    });
+    return productResult;
   }
-
   async checkProductStock(ProductId: string) {
-    const query = `SELECT * FROM product_quantity WHERE product_id= $1`;
-    const result = await this.pool.query(query, [ProductId]);
-
-    if (result.rows.length > 0) {
-      const stock = result.rows[0].stock_quantity;
+    const result = await productQtyModel.findOne({
+      where: { product_id: ProductId },
+    });
+    if (result?.dataValues) {
+      const stock = result.dataValues.stock_quantity;
       return stock;
     } else {
       return false;
     }
   }
 
-
-
   async updateProductStockService(
     product_id: string,
     qty: number,
     operation: "REDUCE" | "RESTORE"
-  ):Promise<updateProductTypes>{
-    let query;
-    let values = [qty, product_id];
+  ): Promise<updateProductTypes> {
+    let whereCondition;
+    let updateData;
     if (operation === "REDUCE") {
-      query = `UPDATE product_quantity
-    SET stock_quantity = stock_quantity - $1
-    WHERE product_id = $2 
-      AND stock_quantity >= $1
-    RETURNING stock_quantity`;
+      updateData = {
+        stock_quantity: sequelize.literal(`stock_quantity - ${qty}`),
+      };
+      whereCondition = {
+        product_id: product_id,
+        stock_quantity: { [Op.gte]: qty },
+      };
     } else if (operation === "RESTORE") {
-      query = `UPDATE product_quantity
-    SET stock_quantity = stock_quantity + $1
-    WHERE product_id = $2
-    RETURNING stock_quantity`;
+      updateData = {
+        stock_quantity: sequelize.literal(`stock_quantity + ${qty}`),
+      };
     } else {
       return { status: 400, msg: "Invalid Operation type" };
     }
 
-    const result = await this.pool.query(query, values);
-    if (result.rowCount === 0) {
-      return {
-        status: 409,
-        msg: "Stock is insufficient or product does not exist",
-      };
-    } else {
+    const [updatedRows, [updatedProduct]] = await productQtyModel.update(
+      updateData,
+      {
+        where: { ...whereCondition },
+        returning: true, // Ensures we get the updated stock_quantity
+      }
+    );
+    console.log("updateRows", updatedRows);
+    console.log(updatedProduct.dataValues);
+    if (updatedRows !== 0) {
       return {
         status: 200,
         msg:
           operation === "REDUCE"
             ? "stock updated successfully"
             : "stock restore successfully",
-        result: result.rows[0],
+        result: updatedProduct.dataValues,
       };
     }
+    return {
+      status: 409,
+      msg: "Stock is insufficient or product does not exist",
+    };
   }
 
   async SubscribeEvents(payload: any): Promise<updateProductTypes> {
@@ -147,7 +160,7 @@ class ProductServices extends Database {
           operation
         );
         break;
-      
+
       case "ORDER CANCELED":
         result = await this.updateProductStockService(
           product_id,

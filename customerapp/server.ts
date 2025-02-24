@@ -1,13 +1,12 @@
 import express, { NextFunction } from "express";
 import cookieParser from "cookie-parser";
-import Database from "./db";
+import { connectDB } from "./db";
 import GlobalErrorHandler from "./controller/error.controller";
 import Router from "./routes/index";
 const PORT = 3006;
-const DB = new Database();
 const app = express();
 
-DB.connectDB();
+connectDB();
 
 app.use(cookieParser());
 app.use(express.urlencoded({ extended: true }));

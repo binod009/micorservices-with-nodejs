@@ -11,7 +11,7 @@ interface CustomJwtPayload extends JwtPayload {
   username: string;
 }
 interface decodeTypes {
-  id: string;
+  id: number;
 }
 
 export const generateAccessToken = asyncHandler(
@@ -50,6 +50,7 @@ export const generateAccessToken = asyncHandler(
 export const activeRegisterUser = asyncHandler(
   async (req: Request, res: Response) => {
     const token = req.query.token as string;
+    console.log(token);
     if (!token) {
       throw new ApiError("token not provided", 401);
     } else {
@@ -57,10 +58,12 @@ export const activeRegisterUser = asyncHandler(
         token,
         process.env.EMAIL_VERIFICATION_KEY!
       ) as decodeTypes;
-      await user_svc.updateUser("login", ["active", decode["id"]]);
+   
+      await user_svc.updateUser("active",decode["id"]);
       res.status(200).json({
         msg: "Account Activated successfully",
       });
     }
   }
 );
+

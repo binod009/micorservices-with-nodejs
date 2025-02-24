@@ -1,14 +1,13 @@
 import express, { Request, Response } from "express";
 import Router from "./routes/index";
-import Database from "./db";
-const db = new Database();
+import { connectDB } from "./db";
+
 import CookieParser from "cookie-parser";
 import GlobalErrorHandler from "./controller/error.controller";
 import Cors from "cors";
-import { apiEventController } from "./controller/api-events.controller";
 const app = express();
 const PORT = 3005;
-db.connectDB();
+connectDB();
 
 app.use(CookieParser());
 app.use(

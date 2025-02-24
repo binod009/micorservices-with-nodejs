@@ -1,5 +1,5 @@
 import { Pool } from "pg";
-
+import { Sequelize } from "sequelize";
 type databaseTypes = {
   user: string;
   host: string;
@@ -7,6 +7,10 @@ type databaseTypes = {
   password: string;
   port: number;
 };
+
+const sequelize = new Sequelize(
+  `postgres://postgres:${process.env.DB_PASS}@localhost:5432/${process.env.DB}`
+);
 
 export default class Database {
   private user: string;
@@ -31,17 +35,17 @@ export default class Database {
     });
   }
   connectDB() {
-    this.pool.connect((err) => {
-      if (!err) {
-        console.log("connect to database");
-      }
-      if (err) {
-        console.log("cannot connect to database", err);
-      }
-    });
+    sequelize
+      .authenticate()
+      .then(() => {
+        console.log("connected to database");
+        sequelize
+          .sync({ alter: true })
+          .then(() => console.log("all models sync"));
+      })
+      .catch((err) => console.log("error connecting to database", err));
   }
 }
-
 // const pool = new Pool({
 //   user: "postgres",
 //   host: "localhost",
@@ -55,3 +59,4 @@ export default class Database {
 //     console.log("cannot connect to PostgreshServer");
 //   } else console.log("connect to postgresh");
 // });
+export { sequelize };

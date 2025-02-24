@@ -16,8 +16,7 @@ export const HelperparseFilter = (filterObj: Ifilters) => {
     "min" in filterObj.price &&
     "max" in filterObj.price
   ) {
-    filterObj.price = { min: +filterObj.price.min, max: +filterObj.price.max };
+    filterObj.price = { min: +filterObj.price.min, max: +filterObj.price.max };   
   }
-
   return filterObj;
 };

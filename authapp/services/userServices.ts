@@ -1,7 +1,11 @@
+import { where } from "sequelize";
 import Pool from "../db";
 import Database from "../db";
 
-class UserService extends Database {
+import { apiRequest } from "../utils/apiRequest";
+import loginModel from "../models/login.model";
+import LoginModel from "../models/login.model";
+class UserService extends Database  {
   constructor() {
     super();
   }
@@ -14,19 +18,55 @@ class UserService extends Database {
     return result;
   };
 
+async getCustomerModel() {
+    const customer_model = await apiRequest("GET", "http://localhost:3009/customer-model", undefined, undefined, {});
+    return customer_model;
+}
+
   // create new User
-  signUpUser = async (newuserdata: string[]) => {
-    return await this.pool.query(
-      "INSERT INTO login (username, email, password) VALUES ($1, $2, $3) RETURNING *",
-      newuserdata
-    );
+  signUpUser = async (newuserdata: any) => {
+    const loginSchema = await this.getCustomerModel();
+    const login_model = loginModel.getLoginModel(loginSchema.data);
+    const user = await login_model.create(newuserdata);
+    const result = await user.save();
+    return {status:201,msg:'register successfully',result:result.dataValues}
   };
-  // This function updates any column in any table based on column name, value, and id
-  updateUser = async (tablename: string, values: string[]): Promise<{}> => {
-    // Construct the dynamic SQL query to update the specified column for the given id
-    const query = `UPDATE ${tablename} SET status = $1 WHERE id = $2`;
-    // Execute the query with the provided values: [new value, record id]
-    return await this.pool.query(query, values);
+
+  updateUser = async (status: string, userId: number) => {
+    
+    const [affectedRows] = await Login.update({ status: status }, {
+      where: {
+        id: userId.toString()
+      }
+    });
+  
+    if (affectedRows > 0) {
+      console.log(`User with ID ${userId} updated successfully.`);
+    } else {
+      console.log(`No user found with ID ${userId}, or status is already the same.`);
+    }
+  
+    return affectedRows;
   };
+
+  async getUserById(userId:string) {
+    const user = await Login.findOne({ where: { id: userId } });
+    if (user) {
+      return { status: 200, msg: 'success', result: user.dataValues };
+    }
+    return { status:404,msg:"user doesnot exist !"}
+}
+
+  // when other services subscribe the event this is fired;
+  async SubscribeEvents(events:{event:string,payload:{user_id:string}}) {
+    let { payload,event } = events;
+    let result;
+    switch (event) {
+     case 'GET USER':
+          result = await this.getUserById(payload.user_id);
+}
+    return result || {status:500,msg:"unknown error finding user"};
+  }
+  
 }
 export default new UserService();

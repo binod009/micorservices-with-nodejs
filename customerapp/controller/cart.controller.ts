@@ -13,6 +13,7 @@ export const addtoCart = asyncHandler(async (req, res) => {
   //   price: number;       // The price of the product being added
   // }
   let data = req.body;
+  
   const token = req.cookies.Acs_tkn;
 
   if (!data.product_id || !data.quantity || !data.customer_id || !data.price) {

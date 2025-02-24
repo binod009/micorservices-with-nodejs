@@ -1,10 +1,11 @@
-import Database from "../db";
+
 import { apiRequest } from "../utils/apiClient";
 import axios from "axios";
 import ApiError from "../utils/ApiError";
-interface Icartdata {
-  customer_id: string;
-  product_id: string;
+import Cart from "../models/cart.model";
+type cartdataTypes= {
+  customer_id: number;
+  product_id: number;
   quantity: number;
   price: number;
 }
@@ -13,8 +14,18 @@ interface StockResponse {
   stock: number; // Available stock
 }
 
-class cartServices extends Database {
-  async addtocartService(cartdata: Icartdata, token: string) {
+class cartServices{
+
+  async getcustomerandproductetails(customer_id:string, product_id:string){
+    const [customerResponse, productResponse] = await Promise.all([
+      apiRequest("GET", `http://localhost:3007/product/api/v1/products/${product_id}`, undefined, undefined),
+      apiRequest("GET", 'http://localhost:3007/customer /api/v1/customer/${customer_id}', undefined, undefined),
+    ]);
+    return [customerResponse, productResponse];
+   }
+
+  async addtocartService(cartdata: cartdataTypes, token: string) {
+  
     const stockres = await apiRequest<StockResponse>(
       "GET",
       `http://localhost:3007/product/api/v1/products/stock/${cartdata.product_id}`,
@@ -29,29 +40,24 @@ class cartServices extends Database {
       };
     } else {
       // if some of the value is not accurate req goes on with no error thrown.
-      const query = `INSERT INTO cart (customer_id, product_id, quantity, price) VALUES($1,$2,$3,$4) RETURNING *`;
-      const values = [
-        cartdata.customer_id,
-        cartdata.product_id,
-        cartdata.quantity,
-        cartdata.price,
-      ];
-      const dbresult = await this.pool.query(query, values);
-      console.log(dbresult.rows);
+      
+      const dbresult= await Cart.create(cartdata);
+   
+      console.log(dbresult.dataValues);
       return {
         status: 201,
         msg: "success",
-        result: dbresult.rows[0],
+        result: dbresult.dataValues,
       };
     }
   }
   async getallCartData() {
-    const query = `SELECT * FROM cart`;
-    const cartdata = await this.pool.query(query);
-    if (cartdata.rowCount === 0) {
+    const cartdata = await Cart.findAll();
+    if (!cartdata) {
       throw new ApiError("no cart data", 404);
     } else {
-      return { status: 200, msg: "success", result: cartdata.rows };
+      console.log('this is cartdata',cartdata);
+      return { status: 200, msg: "success", result: cartdata};
     }
   }
 }

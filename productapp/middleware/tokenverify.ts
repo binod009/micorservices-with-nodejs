@@ -12,17 +12,16 @@ declare module "express-serve-static-core" {
 }
 
 interface CustomJwtPayload extends JwtPayload {
-  userId: string;
-  role: string;
+  id: string;
+  username: string;
 }
 
 interface CustomRequest extends Request {
-  authUser?: { userId: string; role: string }; // Define the shape of `authUser`
+  authUser?: { id: string; username: string }; // Define the shape of `authUser`
 }
 
 export const verifyToken = asyncHandler(
   async (req: CustomRequest, res: Response, next: NextFunction) => {
-   
     let token: string | string[] | null = null;
     if (req.cookies.Acs_tkn) {
       token = req.cookies.Acs_tkn as string;
@@ -47,7 +46,7 @@ export const verifyToken = asyncHandler(
           token,
           process.env.JWT_SECRET_KEY!
         ) as CustomJwtPayload;
-        console.log("from productservice verifytoken", authuser);
+
         req.authUser = authuser;
         next();
       }
