@@ -12,6 +12,9 @@ const sequelize = new Sequelize(
   `postgres://postgres:${process.env.DB_PASS}@localhost:5432/${process.env.DB}`
 );
 
+
+// **POOL is Not beign Used**
+
 export default class Database {
   private user: string;
   private host: string;
@@ -34,16 +37,13 @@ export default class Database {
       port: this.port,
     });
   }
+
   connectDB() {
-    sequelize
-      .authenticate()
-      .then(() => {
-        console.log("connected to database");
-        sequelize
-          .sync({ alter: true })
-          .then(() => console.log("all models sync"));
-      })
-      .catch((err) => console.log("error connecting to database", err));
+    sequelize.authenticate().then(() => {
+      console.log('connected to database')
+    }).catch((error) => {
+      console.log('database connection error', error);
+    })
   }
 }
 // const pool = new Pool({

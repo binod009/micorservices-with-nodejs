@@ -1,8 +1,8 @@
 
 import { apiRequest } from "../utils/apiClient";
-import axios from "axios";
 import ApiError from "../utils/ApiError";
-import Cart from "../models/cart.model";
+import CartModelRegistery from "../models/cart.model";
+import { Model, ModelStatic } from "sequelize";
 type cartdataTypes= {
   customer_id: number;
   product_id: number;
@@ -15,6 +15,29 @@ interface StockResponse {
 }
 
 class cartServices{
+
+   private modelRegistry: CartModelRegistery;
+  public cartModel: ModelStatic<Model<any, any>> | null = null;
+
+  constructor() {
+    this.modelRegistry = CartModelRegistery.getInstance();
+    this.initialize();
+  }
+  // find user based on email
+  // getUserByEmail = async (email: string) => {
+  //   const result = await this.pool.query(
+  //     "SELECT * FROM login WHERE email = $1",
+  //     [email]
+  //   );
+  //   return result;
+  // };
+  private async initialize() {
+    // Initialize the model if it's not already initialized
+    if (!this.cartModel) {
+      await this.modelRegistry.initModel(); // Wait for the model to initialize
+      this.cartModel = this.modelRegistry.getCartModel(); // Now assign the model
+    }
+  }
 
   async getcustomerandproductetails(customer_id:string, product_id:string){
     const [customerResponse, productResponse] = await Promise.all([
@@ -40,9 +63,8 @@ class cartServices{
       };
     } else {
       // if some of the value is not accurate req goes on with no error thrown.
-      
-      const dbresult= await Cart.create(cartdata);
-   
+      if (!this.cartModel) throw new ApiError("cartmodel not initialized", 500);
+      const dbresult= await this.cartModel.create(cartdata);
       console.log(dbresult.dataValues);
       return {
         status: 201,
@@ -52,7 +74,8 @@ class cartServices{
     }
   }
   async getallCartData() {
-    const cartdata = await Cart.findAll();
+    if (!this.cartModel) throw new ApiError("cart model not initalized", 500);
+    const cartdata = await this.cartModel.findAll();
     if (!cartdata) {
       throw new ApiError("no cart data", 404);
     } else {

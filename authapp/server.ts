@@ -2,32 +2,34 @@ import express, { Application, Request, Response, NextFunction } from "express";
 import cookieParser from "cookie-parser";
 import Routes from "./routes/index";
 import globalErrorHandler from "./controller/errorController";
+import LoginModelRegistery from "./models/login.model";
 import Database from "./db";
 const DB = new Database();
 const PORT: number = 3003;
+  const app: Application = express();
+   DB.connectDB();
 
-const app: Application = express();
-DB.connectDB();
-// Middleware
-app.use(cookieParser());
-app.use(express.urlencoded({ extended: true }));
-app.use(express.json());
+  // Middleware 
+    app.use(cookieParser());
+    app.use(express.urlencoded({ extended: true }));
+    app.use(express.json());
 
-// Routes
-app.use(Routes);
+    // Routes
+    app.use(Routes);
 
-// Global Error Handler
-app.use(globalErrorHandler);
+    // Global Error Handler
+    app.use(globalErrorHandler);
 
-app.use("/", (req: Request, res: Response) => {
-  res.status(200).json({
-    msg: "hello from authapp services",
-  });
-});
+    app.use("/", (req: Request, res: Response) => {
+      res.status(200).json({
+        msg: "hello from authapp services",
+      });
+    });
 
-// Start Server
-const server = app.listen(PORT, () => {
-  console.log("server is listening...");
-});
+    // Start Server
+    app.listen(PORT, () => {
+      console.log("server is listening...");
+    });
+  
 
-export default server;
+

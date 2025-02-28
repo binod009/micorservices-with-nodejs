@@ -1,4 +1,3 @@
-
 import { Model } from "sequelize";
 import Wishlist from "../models/wishlists.model";
 import { apiRequest } from "../utils/apiClient";
@@ -12,82 +11,85 @@ interface Idata {
   email: string;
 }
 
-type customerTypes= {
+type customerTypes = {
   user_id: number;
   phone: string;
   address: string;
   status: string;
-}
+};
 
-type wishlistDataTypes= {
+type wishlistDataTypes = {
   customer_id: number;
   product_id: number;
+};
+
+interface Ipayload {
+  event: {};
+  data: {};
 }
 
-interface Ipayload{
-  event: {},
-  data:{}
-}
-
-class EditCustomerServices  {
-
+class EditCustomerServices {
   async getCustomerModel() {
-    const customer_model = await apiRequest("GET", "http://localhost:3009/customer-model", undefined, undefined, {});
+    const customer_model = await apiRequest(
+      "GET",
+      "http://localhost:3009/customer-model",
+      undefined,
+      undefined,
+      {}
+    );
+
     return customer_model;
-}
+  }
 
   async createCustomer(data: customerTypes) {
     try {
       const schema = await this.getCustomerModel();
       const customer_model = defineCustomerModel(schema.data);
-      console.log('this is data sent to data create method-->', data);
+      console.log("this is data sent to data create method-->", data);
       const createuser = await customer_model.create(data);
-    
       const result = await createuser.save();
-      console.log('database result------------>', result);
+      console.log("database result------------>", result);
       return createuser.dataValues;
     } catch (error) {
-      console.log("error from operation databse",error);
+      console.log("error from operation databse", error);
     }
-    }
-    
+  }
 
   async addWhishList(data: wishlistDataTypes) {
     try {
-      const modelobj = await Wishlist.create(data)
+      const modelobj = await Wishlist.create(data);
       const result = await modelobj.save();
       console.log(result);
-    }catch(error){
-      console.log("this is error",error)
+    } catch (error) {
+      console.log("this is error", error);
     }
-    
   }
 
   async deleteWishList(id: string) {
     const result = await Wishlist.destroy({
       where: {
-        id:id
-      }
-    })
+        id: id,
+      },
+    });
     return result; // This will return the deleted row (if any) after the delete operation
   }
 
   async getWishList(customerid: string) {
-//     const query = `
-//        SELECT 
-//     w.id AS wishlist_id,
-//     w.customer_id,
-//     p.id AS product_id,
-//     p.name AS product_name,
-//     p.description,
-//     p.price,
-//     w.added_at
-// FROM wishlists w
-// JOIN products p ON w.product_id = p.id
-// WHERE w.customer_id = 1;
-//     `;
+    //     const query = `
+    //        SELECT
+    //     w.id AS wishlist_id,
+    //     w.customer_id,
+    //     p.id AS product_id,
+    //     p.name AS product_name,
+    //     p.description,
+    //     p.price,
+    //     w.added_at
+    // FROM wishlists w
+    // JOIN products p ON w.product_id = p.id
+    // WHERE w.customer_id = 1;
+    //     `;
     const result = Wishlist.findOne({ where: { id: customerid }, raw: true });
-    console.log('this is result',result);
+    console.log("this is result", result);
   }
 
   // update customer data
@@ -104,30 +106,25 @@ class EditCustomerServices  {
   // }
 
   async findById(userId: string) {
-    const user = await apiRequest("GET", `http://localhost:3007/auth/api-events/user/ ${userId}`, undefined, undefined);
+    const user = await apiRequest(
+      "GET",
+      `http://localhost:3007/auth/api-events/user/ ${userId}`,
+      undefined,
+      undefined
+    );
     console.log(user);
   }
-  
-async ManageProduct() {
-  
-}
 
+  async ManageProduct() {}
 
-  async SubscribeEvents(payload:Ipayload) {
+  async SubscribeEvents(payload: Ipayload) {
     const { event, data } = payload;
     switch (event) {
-      case 'GET PRODUCT':
+      case "GET PRODUCT":
         this.ManageProduct();
         break;
-}
-
-}
-
-
-
-
-
-
+    }
+  }
 }
 
 export default EditCustomerServices;

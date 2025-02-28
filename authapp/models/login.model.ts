@@ -1,33 +1,44 @@
-import { Model, ModelStatic, Sequelize } from "sequelize";
+import { Model, ModelAttributes, ModelStatic } from "sequelize";
 import { sequelize } from "../db";
 import ApiError from "../utils/ApiError";
 import { apiRequest } from "../utils/apiRequest";
 
 class LoginModelRegistery {
   private static instance: LoginModelRegistery;
-  public models: { [key: string]: ModelStatic<any> } = {};
-
+  public models: { [key: string]: ModelStatic<Model<any, any>> } = {};
   private constructor() {}
 
+  
   public static getInstance(): LoginModelRegistery {
-    if (!LoginModelRegistery) {
-      LoginModelRegistery.instance = new LoginModelRegistery();
+    if (!LoginModelRegistery.instance) {
+      return (LoginModelRegistery.instance = new LoginModelRegistery());
+    } else {
+      return LoginModelRegistery.instance;
     }
-    return LoginModelRegistery.instance;
   }
-  public async initModel(): Promise<any> {
+
+  public async initModel(): Promise<void> {
     try {
-      const schema = await apiRequest(
+      const response = await apiRequest<ModelAttributes<Model>>(
         "GET",
-        "http://localhost:3009/customer-model",
+        "http://localhost:3009/login-model",
         undefined,
         undefined,
         {}
       );
-      this.models.login = sequelize.define("login", schema);
+      this.models.login = sequelize.define("logins", response.data);
+      console.log('here is model assigned',this.models);
+      await sequelize.sync({ alter: true });
     } catch (error) {
-      console.log(error);
+      console.log("api get error--->", error);
     }
+  }
+
+  public getLoginModel(){
+    if (!this.models.login) {
+      throw new ApiError("login model is not initialized", 500);
+    }
+    return this.models.login;
   }
 }
 

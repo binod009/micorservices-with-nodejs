@@ -4,6 +4,7 @@ import { Login } from "./login.model";
 export class Customer extends Model {
   public id!: number; // ! indicates non-null assertion (Sequelize initializes it)
   public username!: string;
+  public user_id!: number;
   public email!: string;
   public password?: string; // ? indicates optional
   public createdAt!: Date;
@@ -40,7 +41,6 @@ export const customerModel = (sequelize: Sequelize) => {
     },
     {
       sequelize, // Pass the Sequelize instance
-      tableName: "customers",
       timestamps: true, // Automatically handle timestamps
     }
   );

@@ -1,15 +1,16 @@
-import user_svc from "../services/userServices";
+import UserService from "../services/userServices";
 import { NextFunction, Request, Response } from "express";
 import ApiError from "../utils/ApiError";
 import asyncHandler from "../utils/asyncHandler";
 import jwt, { JwtPayload } from "jsonwebtoken";
-
+const user_svc = new UserService();
 // Define a custom type for your payload if necessary
 interface CustomJwtPayload extends JwtPayload {
   // Add any custom properties that your token contains
   id: string;
   username: string;
 }
+
 interface decodeTypes {
   id: number;
 }

@@ -1,7 +1,9 @@
-import { Model,Sequelize,DataType, DataTypes } from "sequelize";
+import { Model,Sequelize, DataTypes } from "sequelize";
+import { Customer } from "./customer.model";
+import { Product } from "./product.model";
 
 
-class Cart extends Model{
+export class Cart extends Model{
     public cart_id!: number;
     public customer_id!: number;
     public product_id!: number;
@@ -11,36 +13,46 @@ class Cart extends Model{
     public updateAt!:Date
 }
 
-export const  cartModel = (sequelize: Sequelize) => {
-    Cart.init({
-        id: {
-            type:DataTypes.INTEGER,
-            primaryKey: true,
-            autoIncrement:true
-        },
+export const cartModel = (sequelize: Sequelize) => {
+    Cart.init(
+      {
+        cart_id: {
+          type: DataTypes.INTEGER,
+          primaryKey: true,
+          autoIncrement: true,
+            },
         customer_id: {
-            type: DataTypes.INTEGER,
-            allowNull:false
+          type: DataTypes.INTEGER,
+          references: {
+            model: Customer,
+            key: "id",
+          },
+          onDelete: "CASCADE",  // optional, ensures deletion of Cart when Customer is deleted
+       
         },
         product_id: {
-            type: DataTypes.INTEGER,
-            allowNull:false
+          type: DataTypes.INTEGER,
+          references: {
+            model: Product,
+            key: "id",
+          },
+        
         },
         quantity: {
-            type: DataTypes.INTEGER,
-            allowNull:false
+          type: DataTypes.INTEGER,
+          allowNull: false,
         },
         price: {
-            type: DataTypes.INTEGER,
-            allowNull:false
+          type: DataTypes.INTEGER,
+          allowNull: false,
         },
-        createdAt: {
-            type: DataTypes.DATE,
-            defaultValue: DataTypes.NOW,
-          },
-          updatedAt: {
-            type: DataTypes.DATE,
-            defaultValue: DataTypes.NOW,
-          },
-    },{sequelize})
-}
+      },
+      {
+        sequelize,
+        timestamps: true, // Automatically adds `createdAt` and `updatedAt`
+      }
+    );
+  
+    return Cart;
+  };
+  

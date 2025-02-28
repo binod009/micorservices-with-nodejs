@@ -1,7 +1,7 @@
 import { Model, Sequelize, DataTypes } from "sequelize";
 
 
-class Product extends Model{
+export class Product extends Model{
     public id!: number;
     public product_name!: string;
     public description!: string;
@@ -47,6 +47,7 @@ export const productModel = (sequelize: Sequelize) => {
             defaultValue: DataTypes.NOW,
           },
 
-    }, { sequelize, tableName: 'products', timestamps: true })
+    }, { sequelize, timestamps: true })
+
     return Product;
 }

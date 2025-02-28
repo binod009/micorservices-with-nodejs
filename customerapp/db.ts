@@ -6,12 +6,13 @@ const sequelize = new Sequelize(
   `postgres://postgres:${process.env.DB_PASS}@localhost:5432/${process.env.DB}`
 );
 
+
 export const connectDB = () => {
     sequelize
       .authenticate()
       .then(() => {
         sequelize
-          .sync({force:true,alter: true})
+          .sync({alter: true})
           .then(() => console.log("all models sync"));
       })
       .catch((err) => console.log("error connecting to database", err)); 

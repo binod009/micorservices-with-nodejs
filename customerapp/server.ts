@@ -6,6 +6,7 @@ import Router from "./routes/index";
 const PORT = 3006;
 const app = express();
 
+
 connectDB();
 
 app.use(cookieParser());

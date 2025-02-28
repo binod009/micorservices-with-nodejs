@@ -1,72 +1,92 @@
-import { where } from "sequelize";
-import Pool from "../db";
-import Database from "../db";
+import { Model, ModelStatic, where } from "sequelize";
+import LoginModelRegistery from "../models/login.model";
+import ApiError from "../utils/ApiError";
+import { userInfo } from "os";
 
-import { apiRequest } from "../utils/apiRequest";
-import loginModel from "../models/login.model";
-import LoginModel from "../models/login.model";
-class UserService extends Database  {
+class UserService {
+  private modelRegistry: LoginModelRegistery;
+  public loginModel: ModelStatic<Model<any, any>> | null = null;
+
   constructor() {
-    super();
+    this.modelRegistry = LoginModelRegistery.getInstance();
+    this.initialize();
   }
   // find user based on email
-  getUserByEmail = async (email: string) => {
-    const result = await this.pool.query(
-      "SELECT * FROM login WHERE email = $1",
-      [email]
-    );
-    return result;
-  };
-
-async getCustomerModel() {
-    const customer_model = await apiRequest("GET", "http://localhost:3009/customer-model", undefined, undefined, {});
-    return customer_model;
-}
-
+  // getUserByEmail = async (email: string) => {
+  //   const result = await this.pool.query(
+  //     "SELECT * FROM login WHERE email = $1",
+  //     [email]
+  //   );
+  //   return result;
+  // };
+  private async initialize() {
+    // Initialize the model if it's not already initialized
+    if (!this.loginModel) {
+      await this.modelRegistry.initModel(); // Wait for the model to initialize
+      this.loginModel = this.modelRegistry.getLoginModel(); // Now assign the model
+    }
+  }
   // create new User
   signUpUser = async (newuserdata: any) => {
-    const loginSchema = await this.getCustomerModel();
-    const login_model = loginModel.getLoginModel(loginSchema.data);
-    const user = await login_model.create(newuserdata);
-    const result = await user.save();
-    return {status:201,msg:'register successfully',result:result.dataValues}
+    try {
+      if (!this.loginModel) throw new ApiError("model not initialized", 500);
+      const user = await this.loginModel.create(newuserdata);
+      const result = await user.save();
+
+      return {
+        status: 201,
+        msg: "register successfully",
+        result: result.dataValues,
+      };
+    } catch (error) {
+      console.log("creating usererror===>", error);
+    }
   };
 
   updateUser = async (status: string, userId: number) => {
-    
-    const [affectedRows] = await Login.update({ status: status }, {
-      where: {
-        id: userId.toString()
+    if (!this.loginModel) throw new ApiError("model not initialized", 500);
+    const [affectedRows] = await this.loginModel.update(
+      { status: status },
+      {
+        where: {
+          id: userId.toString(),
+        },
       }
-    });
-  
+    );
+
     if (affectedRows > 0) {
       console.log(`User with ID ${userId} updated successfully.`);
     } else {
-      console.log(`No user found with ID ${userId}, or status is already the same.`);
+      console.log(
+        `No user found with ID ${userId}, or status is already the same.`
+      );
     }
-  
+
     return affectedRows;
   };
 
-  async getUserById(userId:string) {
-    const user = await Login.findOne({ where: { id: userId } });
+  async getUserById(userId: string) {
+    if (!this.loginModel) throw new ApiError("model not initialized", 500);
+    const user = await this.loginModel.findOne({ where: { id: userId } });
     if (user) {
-      return { status: 200, msg: 'success', result: user.dataValues };
+      return { status: 200, msg: "success", result: user.dataValues };
     }
-    return { status:404,msg:"user doesnot exist !"}
-}
+    return { status: 404, msg: "user doesnot exist !" };
+  }
 
   // when other services subscribe the event this is fired;
-  async SubscribeEvents(events:{event:string,payload:{user_id:string}}) {
-    let { payload,event } = events;
+  async SubscribeEvents(events: {
+    event: string;
+    payload: { user_id: string };
+  }) {
+    let { payload, event } = events;
+
     let result;
     switch (event) {
-     case 'GET USER':
-          result = await this.getUserById(payload.user_id);
-}
-    return result || {status:500,msg:"unknown error finding user"};
+      case "GET USER":
+        result = await this.getUserById(payload.user_id);
+    }
+    return result || { status: 500, msg: "unknown error finding user" };
   }
-  
 }
-export default new UserService();
+export default UserService;
