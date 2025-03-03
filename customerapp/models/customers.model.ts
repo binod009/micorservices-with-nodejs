@@ -13,9 +13,9 @@ class customerModelRegistery {
   public static getInstance(): customerModelRegistery {
     if (!customerModelRegistery.instance) {
       return (customerModelRegistery.instance = new customerModelRegistery());
-    } else {
-      return customerModelRegistery.instance;
     }
+      return customerModelRegistery.instance;
+    
   }
 
   public async initModel(): Promise<void> {
@@ -27,27 +27,22 @@ class customerModelRegistery {
         undefined,
         {}
       );
-      this.models.login = sequelize.define("logins", response.data);
-      console.log('here is model assigned',this.models);
-      await sequelize.sync({ alter: true });
+      this.models.customers = sequelize.define("customers", response.data);
+      await sequelize.sync({force:false,alter: true });
     } catch (error) {
-      console.log("api get error--->", error);
+      console.log("customerModel api get error--->",error);
     }
   }
 
-  public getLoginModel(){
-    if (!this.models.login) {
-      throw new ApiError("login model is not initialized", 500);
+  public getCustomerModel(){
+    if (!this.models.customers) {
+      throw new ApiError("customer model is not initialized", 500);
     }
-    return this.models.login;
+    return this.models.customers;
   }
 }
 
 export default customerModelRegistery;
 
-export const defineCustomerModel = (schema:any) => {
-    const customer_model = sequelize.define("customers", schema);
-    return customer_model;
-}
 
 

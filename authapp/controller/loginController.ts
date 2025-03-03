@@ -6,7 +6,6 @@ import jwt from "jsonwebtoken";
 import sendEmailVerification from "../services/emailServices";
 require("dotenv").config();
 import UserService from "../services/userServices";
-import LoginModelRegistery from "../models/login.model";
 
 class LoginController {
   private userService: UserService;
@@ -19,24 +18,23 @@ class LoginController {
   signUp = asyncHandler(async (req: Request, res: Response) => {
     const { username, email, password } = req.body;
     const hashedPassword = bcrypt.hashSync(password, 10);
-
     // Insert user into the database
     const user = await this.userService.signUpUser({
       username: username,
       email: email,
       password: hashedPassword,
     });
-
+    console.log("user created0-0-0-0>-",user)
     const token = jwt.sign(
-      { id: user?.result.data.id },
+      { id: user?.result.id },
       process.env.EMAIL_VERIFICATION_KEY!,
       { expiresIn: "1h" }
     );
-
-    // Optionally, send the email verification link
-    await sendEmailVerification(email, token);
-    
+    console.log(token);
     res.status(201).json(user);
+    // Optionally, send the email verification link
+    // await sendEmailVerification(email, token);
+
   });
 
   // SignIn Method

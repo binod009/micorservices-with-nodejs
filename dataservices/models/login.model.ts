@@ -7,23 +7,28 @@ export class Login extends Model {
   public status!: string;
   public createdAt!: Date;
   public updatedAt!: Date;
+ 
 }
 
 export const LoginModel = (sequelize: Sequelize) => {
-  Login.init(
+  const Login = sequelize.define("logins",
     {
       id: {
         type: DataTypes.INTEGER,
         primaryKey: true,
         autoIncrement: true,
       },
+
       username: {
         type: DataTypes.TEXT,
         allowNull: false,
+        unique:true,
       },
       email: {
         type: DataTypes.TEXT,
         allowNull: false,
+        unique: true,
+        
       },
       password: {
         type: DataTypes.TEXT,
@@ -35,8 +40,6 @@ export const LoginModel = (sequelize: Sequelize) => {
       },
     },
     {
-      sequelize,
-
       timestamps: true,
     }
   );

@@ -31,15 +31,17 @@ class UserService {
     try {
       if (!this.loginModel) throw new ApiError("model not initialized", 500);
       const user = await this.loginModel.create(newuserdata);
-      const result = await user.save();
-
-      return {
-        status: 201,
-        msg: "register successfully",
-        result: result.dataValues,
-      };
-    } catch (error) {
-      console.log("creating usererror===>", error);
+      const result = await user.save();;
+      if (result) {
+        return {
+          status: 201,
+          msg: "register successfully",
+          result: result.dataValues,
+        }
+      }
+    return { status: 500, msg: "error creating user" };
+    } catch (error:any) {
+      console.log("creating usererror===>")
     }
   };
 

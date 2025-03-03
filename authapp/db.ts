@@ -9,7 +9,7 @@ type databaseTypes = {
 };
 
 const sequelize = new Sequelize(
-  `postgres://postgres:${process.env.DB_PASS}@localhost:5432/${process.env.DB}`
+  `postgres://postgres:${process.env.DB_PASS}@localhost:5432/${process.env.DB}`,{logging:false}
 );
 
 

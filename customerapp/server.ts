@@ -6,7 +6,6 @@ import Router from "./routes/index";
 const PORT = 3006;
 const app = express();
 
-
 connectDB();
 
 app.use(cookieParser());
@@ -24,5 +23,5 @@ app.use("/", (req, res, next) => {
 });
 
 app.listen(PORT, () => {
-  console.log(`customer app Server running at http://localhost:${PORT}`);
+  console.log('customer app Server running at PORT',PORT);
 });

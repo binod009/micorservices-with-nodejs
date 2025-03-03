@@ -9,10 +9,15 @@ export class Customer extends Model {
   public password?: string; // ? indicates optional
   public createdAt!: Date;
   public updatedAt!: Date;
+  public associate(models: any) {
+    // Associations for Wishlist Model
+    Customer.belongsTo(models.Login, { foreignKey: "user_id" });
+  }
 }
 
 export const customerModel = (sequelize: Sequelize) => {
-  Customer.init(
+  const Customer = sequelize.define(
+    "customers",
     {
       id: {
         type: DataTypes.INTEGER,
@@ -22,7 +27,7 @@ export const customerModel = (sequelize: Sequelize) => {
       user_id: {
         type: DataTypes.INTEGER,
         references: {
-          model: Login,
+          model: "logins",
           key: "id",
         },
       },
@@ -31,16 +36,17 @@ export const customerModel = (sequelize: Sequelize) => {
         allowNull: false,
       },
       address: {
-        type: DataTypes.STRING(100),
+        type: DataTypes.TEXT,
         allowNull: false,
       },
       status: {
-        type: DataTypes.STRING,
+        type: DataTypes.TEXT,
         defaultValue: "inactive",
       },
+    
     },
     {
-      sequelize, // Pass the Sequelize instance
+      // Pass the Sequelize instance
       timestamps: true, // Automatically handle timestamps
     }
   );

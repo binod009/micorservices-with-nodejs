@@ -1,18 +1,23 @@
 import { DataTypes, Model, Sequelize } from "sequelize";
 
-import { Customer } from "./customer.model";
-import { Product } from "./product.model";
-
-export class Wish extends Model {
+export class Wishlist extends Model {
   public id!: number;
   public customer_id!: number;
   public product_id!: number;
   public createdAt!: Date;
   public updatedAt!: Date;
+
+  // Static method to define associations
+  public associate(models: any) {
+    // Associations for Wishlist Model
+    Wishlist.belongsTo(models.Customer, { foreignKey: "customer_id" });
+    Wishlist.belongsTo(models.Product, { foreignKey: "product_id" });
+  }
 }
 
 export const WishModel = (sequelize: Sequelize) => {
-  Wish.init(
+  const Wishlist = sequelize.define(
+    "wishlists",
     {
       id: {
         type: DataTypes.INTEGER,
@@ -22,25 +27,31 @@ export const WishModel = (sequelize: Sequelize) => {
       customer_id: {
         type: DataTypes.INTEGER,
         references: {
-          model: Customer,
+          model: "customers", // Ensure this references the correct table name
           key: "id",
         },
       },
       product_id: {
         type: DataTypes.INTEGER,
         references: {
-          model: Product,
+          model: "products", // Ensure this references the correct table name
           key: "id",
         },
       },
+      createdAt: {
+        type:DataTypes.DATE,
+        allowNull: false,
+      },
+      updatedAt: {
+        type:DataTypes.DATE,
+        allowNull: false,
+      },
     },
     {
-      sequelize,
       timestamps: true,
-      modelName: "Wish", // Optional, just the model name
-      tableName: "wishlists", // Explicitly specify the actual table name
+     
     }
   );
 
-  return Wish;
+  return Wishlist;
 };

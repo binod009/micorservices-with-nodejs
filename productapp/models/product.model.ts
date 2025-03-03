@@ -1,34 +1,45 @@
 import { sequelize } from "../db";
-import { DataTypes } from "sequelize";
-import ProductServices from "../services/product.services";
+import { Model, ModelAttributes, ModelStatic } from "sequelize";
+import ApiError from "../utils/ApiError";
+import { apiRequest } from "../utils/apiRequest";
 
-const productModel = sequelize.define("product", {
-    id:{
-        type: DataTypes.INTEGER,
-        primaryKey: true,
-        autoIncrement:true,
-    },
-    name: {
-        type: DataTypes.STRING,
-    },
-    description: {
-        type:DataTypes.TEXT
-    },
-    price: {
-        type:DataTypes.INTEGER
-    },
-    category: {
-        type: DataTypes.STRING, 
-    },
-    slug: {
-        type:DataTypes.STRING
-    },
-    product_image: {
-        type:DataTypes.STRING,
+class productModelRegistery {
+  private static instance: productModelRegistery;
+  public models: { [key: string]: ModelStatic<Model<any, any>> } = {};
+  private constructor() {}
+
+  public static getInstance(): productModelRegistery {
+    if (!productModelRegistery.instance) {
+      return (productModelRegistery.instance = new productModelRegistery());
+    } else {
+      return productModelRegistery.instance;
     }
+  }
 
-}, {
-    timestamps:true
-})
+  public async initModel(): Promise<void> {
+    try {
+      const response = await apiRequest<ModelAttributes<Model>>(
+        "GET",
+        "http://localhost:3009/product-model",
+        undefined,
+        undefined,
+        {}
+      );
 
-export default productModel;
+      this.models.products = sequelize.define("products", response.data);
+      await sequelize.sync({force:false, alter: true });
+    } catch (error) {
+      console.log("API GET ERROR PRODUTMODEL", error);
+    }
+  }
+
+  public getProductModel() {
+    if (!this.models.products) {
+      throw new ApiError("product model is not initialized", 500);
+    }
+    return this.models.products;
+  }
+}
+
+export default productModelRegistery;
+

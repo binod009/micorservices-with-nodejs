@@ -3,7 +3,7 @@ dotenv.config();
 import { Sequelize } from "sequelize";
 
 const sequelize = new Sequelize(
-  `postgres://postgres:${process.env.DB_PASS}@localhost:5432/${process.env.DB}`
+  `postgres://postgres:${process.env.DB_PASS}@localhost:5432/${process.env.DB}`,{logging:false}
 );
 
 
@@ -11,9 +11,7 @@ export const connectDB = () => {
     sequelize
       .authenticate()
       .then(() => {
-        sequelize
-          .sync({alter: true})
-          .then(() => console.log("all models sync"));
+        console.log("connect to database");
       })
       .catch((err) => console.log("error connecting to database", err)); 
 }

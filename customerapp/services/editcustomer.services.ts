@@ -1,14 +1,19 @@
-import { Model } from "sequelize";
+import { Model, ModelStatic } from "sequelize";
 import Wishlist from "../models/wishlists.model";
 import { apiRequest } from "../utils/apiClient";
 import { create } from "domain";
-import { defineCustomerModel } from "../models/customers.model";
+
+import ApiError from "../utils/ApiError";
+import customerModelRegistery from "../models/customers.model";
+import WishListModelRegistery from "../models/wishlists.model";
+import { sequelize } from "../db";
 
 interface Idata {
-  id: string;
-  username: string;
-  password: string;
-  email: string;
+  id: number;
+  user_id: number;
+  phone: number;
+  address: string;
+  status: string;
 }
 
 type customerTypes = {
@@ -29,6 +34,35 @@ interface Ipayload {
 }
 
 class EditCustomerServices {
+  private modelRegistry: customerModelRegistery;
+  private wishmodelRegistry: WishListModelRegistery;
+  public customerModel: ModelStatic<Model<any, any>> | null = null;
+  public wishlistModel: ModelStatic<Model<any, any>> | null = null;
+
+  constructor() {
+    this.modelRegistry = customerModelRegistery.getInstance();
+    this.wishmodelRegistry = WishListModelRegistery.getInstance();
+    this.initialize();
+  }
+  // find user based on email
+  // getUserByEmail = async (email: string) => {
+  //   const result = await this.pool.query(
+  //     "SELECT * FROM login WHERE email = $1",
+  //     [email]
+  //   );
+  //   return result;
+  // };
+
+  private async initialize() {
+    // Initialize the model if it's not already initialized
+    if (!this.wishlistModel) {
+      await this.modelRegistry.initModel();
+      await this.wishmodelRegistry.initModel(); // Wait for the model to initialize
+      this.customerModel = this.modelRegistry.getCustomerModel(); // Now assign the model
+      this.wishlistModel = this.wishmodelRegistry.getWishlistModel();
+    }
+  }
+
   async getCustomerModel() {
     const customer_model = await apiRequest(
       "GET",
@@ -37,36 +71,34 @@ class EditCustomerServices {
       undefined,
       {}
     );
-
+    await sequelize.sync({ force: false, alter: true });
     return customer_model;
   }
 
   async createCustomer(data: customerTypes) {
     try {
-      const schema = await this.getCustomerModel();
-      const customer_model = defineCustomerModel(schema.data);
-      console.log("this is data sent to data create method-->", data);
-      const createuser = await customer_model.create(data);
+      if (!this.customerModel) throw new ApiError("model not initialized", 500);
+      const createuser = await this.customerModel.create(data);
       const result = await createuser.save();
-      console.log("database result------------>", result);
-      return createuser.dataValues;
+      return { status: 201, msg: "success", result: result };
     } catch (error) {
       console.log("error from operation databse", error);
     }
+    return { status: 500, msg: "error creating cusomter" };
   }
 
   async addWhishList(data: wishlistDataTypes) {
     try {
-      const modelobj = await Wishlist.create(data);
-      const result = await modelobj.save();
-      console.log(result);
+      const result = await this.wishlistModel?.create(data);
+      return {status:200,msg:"success",result:result?.dataValues}
     } catch (error) {
       console.log("this is error", error);
     }
+    return {status:404,msg:"error creating wishlist"}
   }
 
   async deleteWishList(id: string) {
-    const result = await Wishlist.destroy({
+    const result = await this.wishlistModel?.destroy({
       where: {
         id: id,
       },
@@ -88,22 +120,35 @@ class EditCustomerServices {
     // JOIN products p ON w.product_id = p.id
     // WHERE w.customer_id = 1;
     //     `;
-    const result = Wishlist.findOne({ where: { id: customerid }, raw: true });
+    const result = await this.wishlistModel?.findOne({
+      where: { id: customerid },
+      raw: true,
+    });
     console.log("this is result", result);
   }
 
   // update customer data
-  // async updateCustomer(data: Idata) {
-  //   await this.findById(data.id);
-  //   const query = `
-  //       UPDATE login
-  //       SET email = $1, password = $2, username = $3
-  //       WHERE id = $4 RETURNING *
-  //     `;
-  //   const values = [data.email, data.password, data.username, data.id];
-  //   const updated = await this.pool.query(query, values);
-  //   return updated.rows[0];
-  // }
+  async updateCustomer(data: Idata) {
+    // const query = `
+    //     UPDATE login
+    //     SET email = $1, password = $2, username = $3
+    //     WHERE id = $4 RETURNING *
+    //   `;
+    if (!this.customerModel)
+      throw new ApiError("customer model not initialized", 500);
+    const [updatedCount, updatedRows] = await this.customerModel.update(
+      { phone: data.phone, address: data.address, status: data.status },
+      { where: { id: +data.id }, returning: true }
+    );
+    if (updatedCount > 0) {
+      return {
+        status: 200,
+        msg: "updated successfully",
+        result: updatedRows[0].dataValues,
+      };
+    }
+    return { status: 404, msg: "data not found to update" };
+  }
 
   async findById(userId: string) {
     const user = await apiRequest(

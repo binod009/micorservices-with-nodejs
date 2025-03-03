@@ -10,11 +10,15 @@ export class Cart extends Model{
     public quantity!: number;
     public price!: number;
     public createdAt!: Date;
-    public updateAt!:Date
+  public updateAt!: Date
+  public static associate(models:any) {
+    Cart.belongsTo(models.Customer,{foreignKey:'customer_id'})
+  }
 }
-
-export const cartModel = (sequelize: Sequelize) => {
-    Cart.init(
+  
+  export const cartModel = (sequelize: Sequelize) => {
+    const Cart = sequelize.define(
+      "carts",
       {
         cart_id: {
           type: DataTypes.INTEGER,
@@ -24,7 +28,7 @@ export const cartModel = (sequelize: Sequelize) => {
         customer_id: {
           type: DataTypes.INTEGER,
           references: {
-            model: Customer,
+            model: "customers",
             key: "id",
           },
           onDelete: "CASCADE",  // optional, ensures deletion of Cart when Customer is deleted
@@ -33,7 +37,7 @@ export const cartModel = (sequelize: Sequelize) => {
         product_id: {
           type: DataTypes.INTEGER,
           references: {
-            model: Product,
+            model: "products",
             key: "id",
           },
         
@@ -48,11 +52,9 @@ export const cartModel = (sequelize: Sequelize) => {
         },
       },
       {
-        sequelize,
-        timestamps: true, // Automatically adds `createdAt` and `updatedAt`
+        timestamps: true,
       }
     );
   
     return Cart;
   };
-  

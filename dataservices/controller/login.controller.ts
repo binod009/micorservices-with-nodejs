@@ -3,7 +3,6 @@ import { Request, Response, NextFunction } from "express";
 import { login } from "../db";
 import { transformAttributesToSchema } from "../utils/Helpers";
 
-
 export const getLoginModel = async (
   req: Request,
   res: Response,

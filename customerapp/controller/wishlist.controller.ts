@@ -4,10 +4,9 @@ const customer_svc = new EditCustomerServices();
 
 export const createwishList = asyncHandler(async (req, res) => {
   const body = req.body;
-
   const result = await customer_svc.addWhishList(body);
   res.status(200).json({
-    msg: "success",
+    msg: "added to wishlists",
     result: result,
   });
 });

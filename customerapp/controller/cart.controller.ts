@@ -13,8 +13,10 @@ export const addtoCart = asyncHandler(async (req, res) => {
   //   price: number;       // The price of the product being added
   // }
   let data = req.body;
-  
   const token = req.cookies.Acs_tkn;
+  if (!token) {
+    throw new ApiError("token not provided", 404);
+  }
 
   if (!data.product_id || !data.quantity || !data.customer_id || !data.price) {
     throw new ApiError("Product_id, quantity, and user_id are required", 401);
@@ -27,5 +29,5 @@ export const addtoCart = asyncHandler(async (req, res) => {
 
 export const getallCarts = asyncHandler(async (req, res) => {
   const result = await cart_svc.getallCartData();
-  res.status(result.status).json( result );
-})
+  res.status(result.status).json(result);
+});

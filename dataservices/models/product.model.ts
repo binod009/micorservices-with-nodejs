@@ -1,53 +1,53 @@
 import { Model, Sequelize, DataTypes } from "sequelize";
 
+export class Product extends Model {
+  public id!: number;
+  public customer_id!: number;
+  public product_id!: number;
+  public createdAt!: Date;
+  public updatedAt!: Date;
 
-export class Product extends Model{
-    public id!: number;
-    public product_name!: string;
-    public description!: string;
-    public price!: number;
-    public category!: string;
-    public slug!: string;
-    public product_image!: string;
-    public createdAt!: Date;
-    public updateAt!:Date    
+  // Static method to define associations
+  public associate(models: any) {
+    // Associations for Wishlist Model
+  }
 }
 
 export const productModel = (sequelize: Sequelize) => {
-    Product.init({
-        id: {
-            type: DataTypes.INTEGER,
-            primaryKey: true,
-            autoIncrement:true
-        },
-        product_name: {
-            type: DataTypes.STRING,
-            allowNull:false
-        }, price: {
-            type: DataTypes.INTEGER,
-            allowNull:false
-        }, category: {
-            type: DataTypes.STRING,
-            allowNull: false
-        },
-        slug: {
-            type: DataTypes.STRING,
-            allowNull:false
-        },
-        product_image: {
-            type: DataTypes.STRING,
-            allowNull:true
-        },
-        createdAt: {
-            type: DataTypes.DATE,
-            defaultValue: DataTypes.NOW,
-          },
-          updatedAt: {
-            type: DataTypes.DATE,
-            defaultValue: DataTypes.NOW,
-          },
+  const Product = sequelize.define(
+    "products",
+    {
+      id: {
+        type: DataTypes.INTEGER,
+        primaryKey: true,
+        autoIncrement: true,
+      },
+      name: {
+        type: DataTypes.TEXT,
+        allowNull: false,
+      },
+      price: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+      },
+      category: {
+        type: DataTypes.TEXT,
+        allowNull: false,
+      },
+      slug: {
+        type: DataTypes.TEXT,
+        allowNull: false,
+      },
+      product_image: {
+        type: DataTypes.TEXT,
+        allowNull: true,
+      },
+    },
+    {
+      timestamps: true,
+      tableName:"products"
+    }
+  );
 
-    }, { sequelize, timestamps: true })
-
-    return Product;
-}
+  return Product;
+};
