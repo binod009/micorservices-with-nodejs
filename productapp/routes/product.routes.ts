@@ -5,6 +5,7 @@ import {
   getFilterProduct,
   getProductById,
   updateProductStock,
+  deleteProduct,
 } from "../controller/product.controller";
 const product_route = express.Router();
 import verifyUserToken from "../middleware/tokenverify";
@@ -19,6 +20,7 @@ product_route
   .get("/products/stock/:productid", verifyUserToken, findProductStock)
   .get("/products", verifyUserToken, getFilterProduct)
   .patch("/product/stock", verifyUserToken, updateProductStock)
-  .patch("/api-event", verifyUserToken, apiEventController);
+  .patch("/api-event", verifyUserToken, apiEventController)
+  .delete("/products/:id",verifyUserToken,deleteProduct); 
 
 export default product_route;

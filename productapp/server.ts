@@ -8,7 +8,6 @@ import Cors from "cors";
 const app = express();
 const PORT = 3005;
 connectDB();
-
 app.use(CookieParser());
 app.use(
   Cors({

@@ -35,15 +35,26 @@ interface Ipayload {
 
 class EditCustomerServices {
   private modelRegistry: customerModelRegistery;
+  private static instance: EditCustomerServices;
   private wishmodelRegistry: WishListModelRegistery;
   public customerModel: ModelStatic<Model<any, any>> | null = null;
   public wishlistModel: ModelStatic<Model<any, any>> | null = null;
 
-  constructor() {
-    this.modelRegistry = customerModelRegistery.getInstance();
-    this.wishmodelRegistry = WishListModelRegistery.getInstance();
-    this.initialize();
+  // private constructor to prevent direct instance creation
+  private constructor() { 
+      this.modelRegistry = customerModelRegistery.getInstance();
+      this.wishmodelRegistry = WishListModelRegistery.getInstance();
+      this.initialize();
+    
   }
+  // will return the instace of the class if it exists or create a new instance
+  public static getInstance() {
+    if (!EditCustomerServices.instance) {
+      EditCustomerServices.instance = new EditCustomerServices();
+    }
+    return EditCustomerServices.instance;
+}
+
   // find user based on email
   // getUserByEmail = async (email: string) => {
   //   const result = await this.pool.query(
@@ -56,24 +67,16 @@ class EditCustomerServices {
   private async initialize() {
     // Initialize the model if it's not already initialized
     if (!this.wishlistModel) {
-      await this.modelRegistry.initModel();
       await this.wishmodelRegistry.initModel(); // Wait for the model to initialize
-      this.customerModel = this.modelRegistry.getCustomerModel(); // Now assign the model
+    // Now assign the model
       this.wishlistModel = this.wishmodelRegistry.getWishlistModel();
+    }
+    if (!this.customerModel) {
+      await this.modelRegistry.initModel();
+      this.customerModel = this.modelRegistry.getCustomerModel(); 
     }
   }
 
-  async getCustomerModel() {
-    const customer_model = await apiRequest(
-      "GET",
-      "http://localhost:3009/customer-model",
-      undefined,
-      undefined,
-      {}
-    );
-    await sequelize.sync({ force: false, alter: true });
-    return customer_model;
-  }
 
   async createCustomer(data: customerTypes) {
     try {
@@ -172,4 +175,4 @@ class EditCustomerServices {
   }
 }
 
-export default EditCustomerServices;
+export default EditCustomerServices.getInstance();

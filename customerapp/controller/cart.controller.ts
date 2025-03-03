@@ -1,7 +1,7 @@
 import ApiError from "../utils/ApiError";
-import axios, { AxiosError } from "axios";
+
 import { asyncHandler } from "../utils/asyncHandler";
-import { apiRequest } from "../utils/apiClient";
+
 import cart_svc from "../services/cartservices";
 
 export const addtoCart = asyncHandler(async (req, res) => {

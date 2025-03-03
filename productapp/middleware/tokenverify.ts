@@ -47,7 +47,8 @@ export const verifyToken = asyncHandler(
           process.env.JWT_SECRET_KEY!
         ) as CustomJwtPayload;
 
-        req.authUser = authuser;
+        req.authuser = authuser;
+
         next();
       }
     }

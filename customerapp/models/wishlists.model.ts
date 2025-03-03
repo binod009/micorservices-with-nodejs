@@ -10,7 +10,6 @@ class WishListModelRegistery {
   private constructor() {}
 
   public static getInstance(): WishListModelRegistery {
-    console.log('am inside getinstance of wishlistModelRegistery');
     if (!WishListModelRegistery.instance) {
       WishListModelRegistery.instance = new WishListModelRegistery()
     }
@@ -18,7 +17,7 @@ class WishListModelRegistery {
   }
 
   public async initModel(): Promise<void> {
-    console.log("am wishlist initmodel");
+   
     try {
       const response = await apiRequest<ModelAttributes<Model>>(
         "GET",
@@ -27,7 +26,6 @@ class WishListModelRegistery {
         undefined,
         {}
       );
-    
       this.models.wishlist = sequelize.define("wishlists", response.data);
       await sequelize.sync({ force: false, alter: true });
     } catch (error) {}

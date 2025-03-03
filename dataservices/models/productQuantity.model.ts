@@ -8,8 +8,6 @@ export class product_quantities extends Model {
 
   // Static method to define associations
   public associate(models: any) {
-    // Associations for Wishlist Model
-    product_quantities.belongsTo(models.Product, { foreignKey: "product_id" });
   }
 }
 

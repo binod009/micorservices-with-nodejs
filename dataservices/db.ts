@@ -16,22 +16,20 @@ const sequelize = new Sequelize(
 );
 
 
-// initialze model
-export const wishlists = WishModel(sequelize);
+// initialze models
 export const login = LoginModel(sequelize);
 export const customer = customerModel(sequelize);
 export const cart = cartModel(sequelize);
-export const productquantity = ProductquantitiesModel(sequelize);
 export const product = productModel(sequelize);
+export const productquantity = ProductquantitiesModel(sequelize);
+export const wishlists = WishModel(sequelize);
 
 
 export const connectDB = () => {
   sequelize
     .authenticate()
     .then(() => {
-      sequelize
-        .sync({ force: true, alter: true })
-        .then(() => console.log("all models sync"));
+      console.log("connect to database");
     })
     .catch((err) => console.log("error connecting to database", err));
 };

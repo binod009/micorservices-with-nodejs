@@ -25,9 +25,7 @@ class productModelRegistery {
         undefined,
         {}
       );
-
       this.models.products = sequelize.define("products", response.data);
-      await sequelize.sync({force:false, alter: true });
     } catch (error) {
       console.log("API GET ERROR PRODUTMODEL", error);
     }
@@ -42,4 +40,3 @@ class productModelRegistery {
 }
 
 export default productModelRegistery;
-

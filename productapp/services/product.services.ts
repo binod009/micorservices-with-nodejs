@@ -58,6 +58,7 @@ class ProductServices {
   private async initialize() {
     // Initialize the model if it's not already initialized
     if (!this.productModel || !this.productQtyModel) {
+     
       await this.modelRegistry.initModel();
       await this.productQtyModelRegistry.initModel(); // Wait for the model to initialize
       this.productModel = this.modelRegistry.getProductModel(); // Now assign the model
@@ -66,11 +67,20 @@ class ProductServices {
   }
 
   async createProduct(data: productDataTypes) {
+    console.log("this is data-0-0->", data);
     if (!this.productModel) throw new ApiError("model not initialized", 500);
     const result = await this.productModel.create(data);
-  
     return result;
   }
+
+  async deleteProduct(productId: string) {
+    if (!this.productModel) throw new ApiError("model not initialized", 500);
+    const result = await this.productModel.destroy({
+      where: { id: productId }
+    });
+    return result ? {status:200,msg:"delete successfully"}:{status:404,msg:"product not found"};
+  }
+
 
   async FindById(productId: string) {
     if (!this.productModel) throw new ApiError("model not initialized", 500);

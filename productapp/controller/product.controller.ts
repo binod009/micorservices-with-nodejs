@@ -7,7 +7,9 @@ const product_svc = new productservice();
 
 export const createProduct = asyncHandler(async (req, res) => {
   const body = req.body;
+  console.log("this is body-0-0->", body);
   body.userid = req.authuser.id;
+  console.log('THIS IS USER ID-0-0--->',req.authuser.id);
   const result = await product_svc.createProduct(body);
   res.status(201).json({
     msg: "success",
@@ -20,6 +22,13 @@ export const getProductById = asyncHandler(async (req, res) => {
   const result = await product_svc.FindById(productId);
   res.status(result?.status).json(result);
 });
+
+export const deleteProduct = asyncHandler(async (req, res) => {
+  const productId = req.params.id;
+  const result = await product_svc.deleteProduct(productId);
+  res.status(200).json(result);
+})
+
 
 export const getFilterProduct = asyncHandler(async (req, res) => {
   const filters = req.query;
