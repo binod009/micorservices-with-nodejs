@@ -16,7 +16,7 @@ class Order extends Model {
 }
 
 export const orderModel = (sequelize: Sequelize) => {
-    Order.init( {
+   const Order = sequelize.define("orders",{
         order_id: {
             type: DataTypes.INTEGER,
             primaryKey: true,
@@ -40,40 +40,32 @@ export const orderModel = (sequelize: Sequelize) => {
             allowNull: false,
         },
         order_status: {
-            type: DataTypes.STRING(20),
+            type: DataTypes.TEXT,
             allowNull: false,
             defaultValue: 'pending', // Common default status
         },
         payment_status: {
-            type: DataTypes.STRING(20),
+            type: DataTypes.TEXT,
             allowNull: false,
             defaultValue: 'unpaid', // Common default
         },
         payment_method: {
-            type: DataTypes.STRING(50),
+            type: DataTypes.TEXT,
             allowNull: false,
         },
         shipping_address: {
-            type: DataTypes.STRING(255),
+            type: DataTypes.TEXT,
             allowNull: false,
         },
         billing_address: {
-            type: DataTypes.STRING(255),
+            type: DataTypes.TEXT,
             allowNull: false,
         },
         tracking_number: {
-            type: DataTypes.STRING(50),
+            type: DataTypes.TEXT,
             allowNull: true, // Optional, as it might be added later
         },
-        createdAt: {
-            type: DataTypes.DATE,
-            defaultValue: DataTypes.NOW,
-        },
-        updatedAt: {
-            type: DataTypes.DATE,
-            defaultValue: DataTypes.NOW,
-        },
-    }, { sequelize, tableName: "orders", timestamps: true })
+    }, { timestamps: true })
     
     return Order;
 }

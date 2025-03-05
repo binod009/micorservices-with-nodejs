@@ -14,6 +14,16 @@ interface StockResponse {
   stock: number; // Available stock
 }
 
+type subscribeCartEventsType = {
+  status: number,
+  msg:string,
+}
+
+interface IEvents{
+  event: string;
+  payload: { cart_id: string }  
+}
+
 class cartServices {
   private modelRegistry: CartModelRegistery;
   public cartModel: ModelStatic<Model<any, any>> | null = null;
@@ -108,6 +118,26 @@ class cartServices {
     //     },
     //   ],}
     // );
+  }
+
+  async deleteCartItem(cart_id: string):Promise<subscribeCartEventsType > {
+    const result = await this.cartModel?.destroy({
+      where: {
+        cart_id: cart_id,
+      }
+    });
+    return result? {status:200,msg:"deleted successfully"} : {status:404,msg: "cart item not found"}
+  }
+
+
+  async subscribeCarteEvents(events:IEvents): Promise<subscribeCartEventsType >{
+    let { event, payload } = events;
+    let result
+    switch (event) {
+      case  "DELETE FROM CART" :
+      result = await this.deleteCartItem(payload.cart_id);
+    }
+    return result as subscribeCartEventsType; 
   }
 }
 

@@ -1,62 +1,63 @@
-
 interface OrderItem {
-    order_item_id: number;
-    product_id: number;
-    product_name: string;
-    unit_price: string;
-    product_image: string;
-    total_price: string;
-  }
-  
-  // Type for Customer Details
-  interface CustomerDetails {
-    customer_id: number;
-    customer_name: string;
-    customer_phone: string;
-    customer_address: string;
-  }
-  
-  // Type for Grouped Order
-  interface GroupedOrder {
-    order_id: number;
-    order_date: string;
-    total_amount: string;
-    order_status: string;
-    payment_status: string;
-    payment_method: string;
-    shipping_address: string;
-    billing_address: string;
-    tracking_number: string;
-    customer_details: CustomerDetails;
-    order_items: OrderItem[];
-  }
-  
-  // Type for Input Data Item
-  interface InputDataItem {
-    order_id: number;
-    order_date: string;
-      total_amount: string;
-      product_image: string;
-    order_status: string;
-    payment_status: string;
-    payment_method: string;
-    shipping_address: string;
-    billing_address: string;
-    tracking_number: string;
-    customer_id: number;
-    customer_name: string;
-    customer_phone: string;
-    customer_address: string;
-    order_item_id: number;
-    product_id: number;
-    product_name: string;
-    unit_price: string;
-    total_price: string;
-  }
-export const transformOrderData = (data: InputDataItem[]):GroupedOrder[] => {
-    const result = [];
-    // Group data by order_id
-    const groupedOrders = data.reduce((acc: Record<number,GroupedOrder>, item:InputDataItem ) => {
+  order_item_id: number;
+  product_id: number;
+  product_name: string;
+  unit_price: string;
+  product_image: string;
+  total_price: string;
+}
+
+// Type for Customer Details
+interface CustomerDetails {
+  customer_id: number;
+  customer_name: string;
+  customer_phone: string;
+  customer_address: string;
+}
+
+// Type for Grouped Order
+interface GroupedOrder {
+  order_id: number;
+  order_date: string;
+  total_amount: string;
+  order_status: string;
+  payment_status: string;
+  payment_method: string;
+  shipping_address: string;
+  billing_address: string;
+  tracking_number: string;
+  customer_details: CustomerDetails;
+  order_items: OrderItem[];
+}
+
+// Type for Input Data Item
+export interface InputDataItem {
+  order_id: number;
+  customer_id: number;
+  order_date: string;
+  total_amount: string;
+  order_status: string;
+  payment_status: string;
+  payment_method: string;
+  shipping_address: string;
+  billing_address: string;
+  tracking_number: string;
+  product_id: number;
+  product_image: string;
+  order_items_id: number;
+  unit_price: string;
+  total_price: string;
+  customer_phone: string;
+  customer_address: string;
+  customer_name: string;
+  product_name: string;
+}
+
+export const transformOrderData = (data: InputDataItem[]): GroupedOrder[] => {
+  const result = [];
+  // Group data by order_id
+  const groupedOrders = data.reduce(
+    (acc: Record<number, GroupedOrder>, item: InputDataItem) => {
       if (!acc[item.customer_id]) {
         acc[item.customer_id] = {
           order_id: item.order_id,
@@ -72,29 +73,31 @@ export const transformOrderData = (data: InputDataItem[]):GroupedOrder[] => {
             customer_id: item.customer_id,
             customer_name: item.customer_name,
             customer_phone: item.customer_phone,
-            customer_address: item.customer_address
+            customer_address: item.customer_address,
           },
-          order_items: []
+          order_items: [],
         };
-        }
-  
+      }
+
       // Add order item details
       acc[item.customer_id].order_items.push({
-        order_item_id: item.order_item_id,
-          product_id: item.product_id,
-          product_image:item.product_image,
+        order_item_id: item.order_items_id,
+        product_id: item.product_id,
+        product_image: item.product_image,
         product_name: item.product_name,
         unit_price: item.unit_price,
-        total_price: item.total_price
+        total_price: item.total_price,
       });
-       
+
       return acc;
-    }, {});
-    
-   // Convert the grouped orders into an array
-    for (const order in groupedOrders) {
-      result.push(groupedOrders[order]);
-    }
-  
-    return result;
-  };
+    },
+    {}
+  );
+
+  // Convert the grouped orders into an array
+  for (const order in groupedOrders) {
+    result.push(groupedOrders[order]);
+  }
+
+  return result;
+};

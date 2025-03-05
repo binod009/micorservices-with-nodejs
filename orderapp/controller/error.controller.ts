@@ -1,69 +1,47 @@
 import { NextFunction, Response, Request } from "express";
+import { JsonWebTokenError, TokenExpiredError } from "jsonwebtoken";
 import ApiError from "../utils/ApiError";
-import { JsonWebTokenError } from "jsonwebtoken";
-import { stat } from "fs";
 
 const ErrorHandler = (
-  error: Error | ApiError,
+  error: Error | ApiError,  // Ensure it's typed correctly
   req: Request,
   res: Response,
   next: NextFunction
-) => {
-  if (error.message === "jwt expired") {
-    res.status(401).json({
-      statusCode: 401,
-      status: "fail",
-      message: "token expired",
-    });
-  }
+)=> {  // Return type should be void, not 0 | undefined
   
-  if (error instanceof JsonWebTokenError) {
+  if (error instanceof TokenExpiredError) {
     res.status(401).json({
-      statusCode: 401,
-      status: 'fai;',
-      msg: error.message
-    })
-  }
-  if (error instanceof ApiError) {
-    res.status(error.statusCode).json({
-      statusCode: error.statusCode,
-      status: error.status,
-      message: error.message,
+      success: false,
+      error: "TokenExpiredError",
+      message: "Your session has expired. Please log in again.",
+      expiredAt: error.expiredAt,
     });
-  }
-  // if error is not instace of Apierror class
-  res.status(500).json({
-    statusCode: 500,
-    status: "error",
-    message: "Internal server error", // Or log the error for debugging
-  });
-};
+  } else
 
-// const ErrorHandler = (
-//   error: Error | ApiError,
-//   req: Request,
-//   res: Response,
-//   next: NextFunction
-// ) => {
-//   if (error.message === "jwt expired") {
-//     res.status(401).json({
-//       statusCode: 401,
-//       status: "fail",
-//       message: "token expired",
-//     });
-//   }
-//   if (error instanceof ApiError) {
-//     res.status(error.statusCode).json({
-//       statusCode: error.statusCode,
-//       status: error.status,
-//       message: error.message,
-//     });
-//   }
-//   res.status(500).json({
-//     statusCode: 500,
-//     status: "error",
-//     message: "Internal Server Error",
-//   });
-// };
+    if (error instanceof JsonWebTokenError) {
+      res.status(401).json({
+        success: false,
+        error: "JsonWebTokenError",
+        message: error.message,
+      });
+    } else
+      if (error instanceof ApiError) {
+        res.status(error.statusCode).json({
+          success: false,
+          statusCode: error.statusCode,
+          status: error.status,
+          message: error.message,
+        });
+      }
+      else {
+        // Default error handler for unhandled errors
+        res.status(500).json({
+          success: false,
+          statusCode: 500,
+          status: "error",
+          message: "Internal server error",
+        });
+      }
+};
 
 export default ErrorHandler;

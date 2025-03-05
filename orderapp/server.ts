@@ -2,12 +2,9 @@ import express from "express";
 import Cookies from "cookie-parser";
 import Cors from "cors";
 import GlobalErrorHandler from "./controller/error.controller";
-import Database from "./db";
+import { connectDB } from "./db";
 import Routes from "./routes/index";
-const db = new Database();
-
-db.connectDB();
-
+connectDB();
 const app = express();
 app.use(Cookies());
 

@@ -1,10 +1,10 @@
-
 import ApiError from "../utils/ApiError";
-import dotenv from "dotenv"
+import dotenv from "dotenv";
 dotenv.config();
-import { Request,Response,NextFunction } from "express";
+import { Request, Response, NextFunction } from "express";
 import { asyncHandler } from "../utils/asyncHandler";
-import Jwt,{ JwtPayload } from "jsonwebtoken";
+import Jwt, { JwtPayload } from "jsonwebtoken";
+
 interface CustomJwtPayload extends JwtPayload {
   user_id: string;
   role: string;
@@ -17,10 +17,6 @@ interface CustomRequest extends Request {
 export const verifyToken = asyncHandler(
   async (req: CustomRequest, res: Response, next: NextFunction) => {
     let token: string | string[] | null = null;
-    if (req.cookies.Acs_tkn) {
-      token = req.cookies.Acs_tkn as string;
-      
-    }
     if (req.headers.authorization || req.headers["x-xsrf-token"]) {
       token =
         typeof req.headers.authorization === "string"
@@ -28,6 +24,8 @@ export const verifyToken = asyncHandler(
           : null;
     } else if (typeof req.query.token === "string") {
       token = req.query.token;
+    } else if (req.cookies.Acs_tkn) {
+      token = req.cookies.Acs_tkn as string;
     }
     if (!token) {
       throw new ApiError("token not provided", 401);
@@ -37,15 +35,14 @@ export const verifyToken = asyncHandler(
       if (!token) {
         throw new ApiError("invalid token", 401);
       } else {
-        const authuser = Jwt.verify(
-          token,
-          process.env.JWT_SECRET_KEY!
+          const authuser = Jwt.verify(
+            token,
+            process.env.JWT_SECRET_KEY!
         ) as CustomJwtPayload;
-
+        console.log(authuser);
         req.authUser = authuser;
         next();
       }
     }
   }
 );
-

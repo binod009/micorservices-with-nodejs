@@ -184,8 +184,7 @@ class ProductServices {
         returning: true, // Ensures we get the updated stock_quantity
       }
     );
-    console.log("updateRows", updatedRows);
-    console.log(updatedProduct.dataValues);
+   
     if (updatedRows !== 0) {
       return {
         status: 200,

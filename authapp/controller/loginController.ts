@@ -6,6 +6,7 @@ import jwt from "jsonwebtoken";
 import sendEmailVerification from "../services/emailServices";
 require("dotenv").config();
 import UserService from "../services/userServices";
+import { access } from "fs";
 
 class LoginController {
   private userService: UserService;
@@ -24,7 +25,7 @@ class LoginController {
       email: email,
       password: hashedPassword,
     });
-    console.log("user created0-0-0-0>-",user)
+    console.log("user created0-0-0-0>-", user);
     const token = jwt.sign(
       { id: user?.result.id },
       process.env.EMAIL_VERIFICATION_KEY!,
@@ -34,18 +35,19 @@ class LoginController {
     res.status(201).json(user);
     // Optionally, send the email verification link
     // await sendEmailVerification(email, token);
-
   });
 
   // SignIn Method
   signIn = asyncHandler(async (req: Request, res: Response) => {
     const { email, password } = req.body;
-    if (!this.userService.loginModel) throw new ApiError('Model Not initialized', 500);
-
+    if (!this.userService.loginModel)
+      throw new ApiError("Model Not initialized", 500);
 
     // Get the login model from the registry
-    const user = await this.userService.loginModel.findOne({ where: { email: email } });
-    
+    const user = await this.userService.loginModel.findOne({
+      where: { email: email },
+    });
+
     // Check if user exists and account status
     if (user && user.dataValues.status === "inactive") {
       throw new ApiError("Check your email to activate your account", 400);
@@ -82,6 +84,7 @@ class LoginController {
 
         res.status(200).json({
           success: true,
+          accessToken: accessToken,
         });
       } else {
         throw new ApiError("Invalid password", 400);

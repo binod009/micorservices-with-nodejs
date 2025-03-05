@@ -5,8 +5,10 @@ import { customerModel } from "./models/customer.model";
 import { LoginModel } from "./models/login.model";
 import { cartModel } from "./models/cart.model";
 import {  WishModel } from "./models/wish.model";
-import { product_quantities, ProductquantitiesModel } from "./models/productQuantity.model";
+import { ProductquantitiesModel } from "./models/productQuantity.model";
 import { productModel } from "./models/product.model";
+import { orderModel } from "./models/order.model";
+import { orderItemModel } from "./models/orderitem.model";
 
 
 // import { productModel } from "./models/product.model";
@@ -23,13 +25,15 @@ export const cart = cartModel(sequelize);
 export const product = productModel(sequelize);
 export const productquantity = ProductquantitiesModel(sequelize);
 export const wishlists = WishModel(sequelize);
+export const orders = orderModel(sequelize);
+export const orderitems = orderItemModel(sequelize);
 
 
-export const connectDB = () => {
+export  const connectDB = () => {
   sequelize
     .authenticate()
     .then(() => {
-      console.log("connect to database");
+    sequelize.sync({force:false,alter:true}).then(()=>console.log("all models sync"))
     })
     .catch((err) => console.log("error connecting to database", err));
 };
