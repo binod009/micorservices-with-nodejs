@@ -41,7 +41,7 @@ class UserService {
       }
     return { status: 500, msg: "error creating user" };
     } catch (error:any) {
-      console.log("creating usererror===>")
+      console.log("creating usererror===>", error);
     }
   };
 

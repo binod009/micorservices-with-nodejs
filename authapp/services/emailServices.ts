@@ -15,6 +15,7 @@ const sendEmailVerification = async (to:string, token:string):Promise<void> => {
         <body>
           <h1>Welcome to Our Service!</h1>
           <p>Thank you for registering. Please click the link below to activate your account:</p>
+          <p>Account activation time is 1hour,after 1hour Activation token will expire</p>
           <p><a href="${activationUrl}" style="color: #4CAF50; font-size: 18px; font-weight: bold;">Activate Account</a></p>
           <p>If you did not register, please ignore this email.</p>
         </body>

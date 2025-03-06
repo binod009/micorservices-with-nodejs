@@ -7,6 +7,7 @@ import sendEmailVerification from "../services/emailServices";
 require("dotenv").config();
 import UserService from "../services/userServices";
 import { access } from "fs";
+import ConnectRedis from "../utils/redisClient";
 
 class LoginController {
   private userService: UserService;
@@ -17,6 +18,7 @@ class LoginController {
 
   // SignUp Method
   signUp = asyncHandler(async (req: Request, res: Response) => {
+    const redis = ConnectRedis.getInstance();
     const { username, email, password } = req.body;
     const hashedPassword = bcrypt.hashSync(password, 10);
     // Insert user into the database
@@ -25,16 +27,16 @@ class LoginController {
       email: email,
       password: hashedPassword,
     });
-    console.log("user created0-0-0-0>-", user);
+  
     const token = jwt.sign(
       { id: user?.result.id },
       process.env.EMAIL_VERIFICATION_KEY!,
       { expiresIn: "1h" }
     );
-    console.log(token);
-    res.status(201).json(user);
-    // Optionally, send the email verification link
-    // await sendEmailVerification(email, token);
+    await sendEmailVerification(email, token);
+    const isStored = redis.StoreToken(token, 60);
+      res.status(201).json(user);
+  
   });
 
   // SignIn Method

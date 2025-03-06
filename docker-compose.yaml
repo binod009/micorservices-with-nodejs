@@ -21,7 +21,7 @@ services:
     #   dockerfile: Dockerfile
     volumes: 
     - ./orderapp:/home/node/orderapp
-    image: orderapp:latest
+    image: node:latest
     working_dir: /home/node/orderapp
     command: npm start
     ports: 
@@ -58,7 +58,9 @@ services:
 
   customerapp:
     container_name: customerapp
-    
+    build:
+    context: ./customerapp
+    dockerfile: Dockerfile
     volumes:
     - ./customerapp:/home/node/customerapp
     image: node:latest
@@ -68,7 +70,20 @@ services:
     - 3006:3006
     networks:
       - auth_net
-  
+
+  dataservices:
+    container_name: dataservices
+    volumes:
+    - ./dataservices:/home/node/dataservices
+    image: node:latest
+    working_dir: /home/node/dataservices
+    command: npm start
+    ports: 
+      - 3009:3009
+    networks:
+      - auth_net
+
+
 
 networks:
   auth_net:
